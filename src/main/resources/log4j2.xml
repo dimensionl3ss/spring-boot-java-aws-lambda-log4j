@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration packages="com.amazonaws.services.lambda.runtime.log4j2">
     <Appenders>
-        <Console name="Console" target="SYSTEM_OUT">
+        <Lambda name="lambda">
 			<JsonTemplateLayout eventTemplateUri="classpath:EcsLayout.json"/>
-        </Console>
+        </Lambda>
     </Appenders>
     <Loggers>
         <!-- LOG everything at INFO level -->
         <Root level="info">
-            <AppenderRef ref="Console" />
+            <AppenderRef ref="lambda" />
         </Root>
     </Loggers>
 </Configuration>
