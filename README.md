@@ -7,7 +7,8 @@ We can deploy any spring application on AWS Lambda in two ways.
 - Java 17
 - Maven 
 - Spring Boot Version 3
-- Docker 
+- Docker
+- Postman
 
 ## Configure Serverless Lambda and Log4j Library in the existing Spring boot application
 ### 1. Add Dependencies
@@ -80,9 +81,9 @@ and still return control back to the Lambda runtime in a timely fashion, we supp
 	        handler.proxyStream(inputStream, outputStream, context);
 	    }
 	}
-### Package the application
+### 3. Package the application
 We need two maven plugins for packaging the application.
-1. `maven-dependency-plugin`: This will copy the dependencies of the application into the `target/dependency` folder. we will need to copy the dependencies into the image container.
+- `maven-dependency-plugin`: This will copy the dependencies of the application into the `target/dependency` folder. we will need to copy the dependencies into the image container.
 
 		<plugin>
 		    <artifactId>maven-dependency-plugin</artifactId>
@@ -99,7 +100,7 @@ We need two maven plugins for packaging the application.
 		    </executions>
 		</plugin>
    
-2. `maven-shade-plugin`: By default, Spring Boot projects include the `spring-boot-maven-plugin` and an embedded Tomcat application server. To package the Spring Boot application for AWS Lambda, we do not need the Spring Boot maven plugin and we can configure the shade plugin to exclude the embedded Tomcat - the serverless-java-container library takes its place.
+- `maven-shade-plugin`: By default, Spring Boot projects include the `spring-boot-maven-plugin` and an embedded Tomcat application server. To package the Spring Boot application for AWS Lambda, we do not need the Spring Boot maven plugin and we can configure the shade plugin to exclude the embedded Tomcat - the serverless-java-container library takes its place.
 If you use the appender library (`aws-lambda-java-log4j2`), you must also configure a transformer for the Maven Shade plugin. The transformer library combines versions of a cache file that appear in both the appender library and in Log4j. Also, maven-shade-plugin may cause to ignore MANIFEST.MF. You will need to add a manifest resource transformer identifying your main class.
 
 		<plugin>
@@ -143,15 +144,75 @@ If you use the appender library (`aws-lambda-java-log4j2`), you must also config
 			</dependencies>
 		</plugin>
 
-### Deploy on AWS Lambda
+### 4. Deploy on AWS Lambda
 
-#### 1. Deploy using the deployment package.
-Build your deployment package using the `mvn clean package` command. It will create a shaded jar (with shade suffix) of the application. You can now upload this jar in your AWS Lambda function directly or put this jar into the S3 bucket and upload the S3 Key URL into the lambda function.
+#### 4.1. Deploy using the deployment package.
+Build your deployment package using the `mvn clean package` command. It will create a shaded jar (with shade suffix) of the application. You can now upload this jar in your AWS Lambda function directly or put this jar into the S3 bucket and upload the S3 Key URL into the Lambda function.
 
-#### 2. Create an Image using Dockerfile.
+#### 4.2. Create an Image using Dockerfile.
+- Create a Dockerfile to create a Docker container image and push this image into AWS ECR.
 
+		FROM public.ecr.aws/lambda/java:17
+		# Copy function code and runtime dependencies from Maven layout
+		COPY target/classes ${LAMBDA_TASK_ROOT}
+		COPY target/dependency/* ${LAMBDA_TASK_ROOT}/lib/
+		    
+		# Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
+		CMD ["com.adarsh.LambdaHandler.StreamLambdaHandler::handleRequest"]
 
+	Now use the image from AWS ECR to create a Lambda function. </br>
+	Note: The Amazon ECR repository must be in the same AWS Region as the Lambda function.
 
+- Create and Test the Docker image locally
+	1. Create the Docker image using the command `docker build -t spring-lambda:test .`
+ 	2. Run the image as a container using the command `docker run -p 9000:8080 spring-lambda:test`
+  	3. Send a `GET` request to `http://localhost:9000/2015-03-31/functions/function/invocations` using Postman. Use below JSON object as request body for the request.
+  	   
+			{
+			    "requestContext": {
+			        "elb": {
+			            "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/lambda-279XGJDqGZ5rsrHC2Fjr/49e9d65c45c6791a"
+			        }
+			    },
+			    "httpMethod": "GET",
+			    "path": "/api/hello",
+			    "queryStringParameters": {
+			        "query": "1234ABCD"
+			    },
+			    "headers": {
+			        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+			        "accept-encoding": "gzip",
+			        "accept-language": "en-US,en;q=0.9",
+			        "connection": "keep-alive",
+			        "host": "lambda-alb-123578498.us-east-1.elb.amazonaws.com",
+			        "upgrade-insecure-requests": "1",
+			        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36",
+			        "x-amzn-trace-id": "Root=1-5c536348-3d683b8b04734faae651f476",
+			        "x-forwarded-for": "72.12.164.125",
+			        "x-forwarded-port": "80",
+			        "x-forwarded-proto": "http",
+			        "x-imforwards": "20"
+			    },
+			    "body": "",
+			    "isBase64Encoded": false
+			}
 
+     	Expected Response:
 
-
+			{
+				"statusCode":200,
+				"statusDescription":"200 OK",
+				"multiValueHeaders":{
+					"Content-Length":["13"],
+					"Content-Type":["text/plain; charset=UTF-8"]
+					},
+				"body":"Hello World!!",
+				"isBase64Encoded":false
+			}
+			 
+	
+	
+	
+	
+	
+	
