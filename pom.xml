@@ -57,13 +57,27 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.amazonaws.serverless</groupId>
-			<artifactId>aws-serverless-java-container-spring</artifactId>
-			<version>1.9.2</version>
+		    <groupId>com.amazonaws.serverless</groupId>
+		    <artifactId>aws-serverless-java-container-springboot3</artifactId>
+		    <version>2.0.0-M2</version>
 		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
+			<plugin>
+	            <artifactId>maven-dependency-plugin</artifactId>
+	            <executions>
+	              <execution>
+	                <phase>install</phase>
+	                <goals>
+	                  <goal>copy-dependencies</goal>
+	                </goals>
+	                <configuration>
+	                  <outputDirectory>${project.build.directory}/dependency</outputDirectory>
+	                </configuration>
+	              </execution>
+	            </executions>
+	          </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -88,6 +102,11 @@
 									</manifestEntries>
 								</transformer>
 							</transformers>
+							<artifactSet>
+                            	<excludes>
+                                	<exclude>org.apache.tomcat.embed:*</exclude>
+                            	</excludes>
+                        	</artifactSet>
 						</configuration>
 					</execution>
 				</executions>

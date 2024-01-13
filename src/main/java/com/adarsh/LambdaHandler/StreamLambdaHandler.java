@@ -10,17 +10,17 @@ import com.adarsh.SpringJavaLambdaLog4jApplication;
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.spring.SpringLambdaContainerHandler;
+import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 
 public class StreamLambdaHandler implements RequestStreamHandler {
 	private static Logger logger = LogManager.getLogger(StreamLambdaHandler.class); 
-    private static final SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private static final SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
     static {
         try {
             
-            handler = SpringLambdaContainerHandler.getAwsProxyHandler(SpringJavaLambdaLog4jApplication.class);
+            handler = SpringBootLambdaContainerHandler.getAwsProxyHandler(SpringJavaLambdaLog4jApplication.class);
         } catch (ContainerInitializationException e) {
             // if we fail here. We re-throw the exception to force another cold start
         	logger.error("Could not initialize Spring framework");
