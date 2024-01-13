@@ -1,0 +1,1 @@
+# Spring Boot Application Deployment on AWS Lambda with Container Image
