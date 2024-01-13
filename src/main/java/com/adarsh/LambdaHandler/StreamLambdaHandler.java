@@ -17,7 +17,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 
 public class StreamLambdaHandler implements RequestStreamHandler {
-	private static Logger logger = LogManager.getLogger(StreamLambdaHandler.class); 
     private SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	public StreamLambdaHandler() throws ContainerInitializationException {
@@ -30,7 +29,6 @@ public class StreamLambdaHandler implements RequestStreamHandler {
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
             throws IOException {
-    	logger.info("Request Context: {}", context.toString());
         handler.proxyStream(inputStream, outputStream, context);
     }
     
