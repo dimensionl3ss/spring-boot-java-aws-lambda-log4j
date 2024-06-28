@@ -6,14 +6,14 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.1</version>
+		<version>3.3.1</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.adarsh</groupId>
 	<artifactId>spring-java-lambda-log4j</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>spring-java-lambda-log4j</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Spring Boot application to deploy on AWS lambda</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
@@ -57,27 +57,13 @@
 		</dependency>
 
 		<dependency>
-		    <groupId>com.amazonaws.serverless</groupId>
-		    <artifactId>aws-serverless-java-container-springboot3</artifactId>
-		    <version>2.0.0-M2</version>
+			<groupId>com.amazonaws.serverless</groupId>
+			<artifactId>aws-serverless-java-container-springboot3</artifactId>
+			<version>2.0.0-M2</version>
 		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
-			<plugin>
-	            <artifactId>maven-dependency-plugin</artifactId>
-	            <executions>
-	              <execution>
-	                <phase>install</phase>
-	                <goals>
-	                  <goal>copy-dependencies</goal>
-	                </goals>
-	                <configuration>
-	                  <outputDirectory>${project.build.directory}/dependency</outputDirectory>
-	                </configuration>
-	              </execution>
-	            </executions>
-	          </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -103,10 +89,10 @@
 								</transformer>
 							</transformers>
 							<artifactSet>
-                            	<excludes>
-                                	<exclude>org.apache.tomcat.embed:*</exclude>
-                            	</excludes>
-                        	</artifactSet>
+								<excludes>
+									<exclude>org.apache.tomcat.embed:*</exclude>
+								</excludes>
+							</artifactSet>
 						</configuration>
 					</execution>
 				</executions>
